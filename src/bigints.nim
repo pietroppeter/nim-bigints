@@ -699,11 +699,15 @@ func bits(d: uint32): int =
     d = d shr 6
   result += bitLengths[int(d)]
 
+import sugar
+
 # From Knuth and Python
 func unsignedDivRem(q, r: var BigInt, n, d: BigInt) =
   var
     nn = n.limbs.len
     dn = d.limbs.len
+  dump nn
+  dump dn
 
   if n.isZero:
     q = zero
@@ -741,7 +745,14 @@ func unsignedDivRem(q, r: var BigInt, n, d: BigInt) =
     var qib = zero
     var q1b = zero
 
+    dump q
+    dump r
+    dump nn
+    dump dn
+    dump k
+
     for v in countdown(k-1, 0):
+      dump v
       # estimate quotient digit, may rarely overestimate by 1
       let vtop = q.limbs[v + dn]
       assert vtop <= wm1
@@ -750,12 +761,20 @@ func unsignedDivRem(q, r: var BigInt, n, d: BigInt) =
       var r1 = vv mod wm1
 
       while (wm2 * q1) > ((r1 shl 32) or q.limbs[v+dn-2]):
+        debugEcho "overestimating"
+        dump (wm2 * q1)
+        dump ((r1 shl 32) or q.limbs[v+dn-2])
         dec q1
         r1 += wm1
         if r1 > uint32.high:
+          debugEcho "breaking on r1"
           break
+        dump (wm2 * q1)
+        dump ((r1 shl 32) or q.limbs[v+dn-2])
 
-      assert q1 <= uint32.high
+      dump q1
+      dump uint32.high
+      assert q1 <= uint32.high  # error occurs here
 
       q1b.limbs[0] = uint32(q1)
 
